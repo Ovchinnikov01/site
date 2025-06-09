@@ -6,13 +6,13 @@ RUN apt-get install -y nodejs
 
 WORKDIR /app
 
-COPY package.json package-lock.json postcss.config.js tailwind.config.js ./
+COPY package*.json postcss.config.js tailwind.config.js ./
 COPY requirements.txt ./
 
 RUN pip install --no-cache-dir -r requirements.txt
 
 RUN npm install
-RUN npm run build  # или другой скрипт из package.json
+RUN npm run build-css  # Собираем Tailwind
 
 COPY . .
 
