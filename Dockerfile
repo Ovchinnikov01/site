@@ -6,14 +6,17 @@ RUN apt-get install -y nodejs
 
 WORKDIR /app
 
-COPY package*.json postcss.config.js tailwind.config.js ./
+COPY package*.json ./
 COPY requirements.txt ./
 
 RUN pip install --no-cache-dir -r requirements.txt
 
 RUN npm install
-RUN npm run build-css  # Собираем Tailwind
 
 COPY . .
+
+RUN mkdir -p static/dist/css
+
+RUN npm run build-css
 
 CMD ["gunicorn", "app:app", "-b", "0.0.0.0:8000"]
