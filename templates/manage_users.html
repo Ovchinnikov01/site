@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+{% block body %}
+<header class="relative bg-blue-400 border-b border-gray-200 py-6">
+    <div class="container mx-auto flex items-center justify-between">
+        <a href="{{ url_for('index') }}" class="text-2xl font-bold text-white flex items-center">
+            <img class="h-10 w-10 mr-2" src="/static/img/Isologo.png" alt="Логотип OnlineSurvey">
+            <span>OnlineSurvey</span>
+        </a>
+
+        <form action="{{ url_for('search') }}" method="get" class="flex items-center justify-center flex-grow space-x-6">
+            <a href="{{ url_for('all_surveys') }}">
+                <button type="button" class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-2 px-4 rounded-full font-bold transition duration-300 shadow-sm transform hover:scale-105 hover:text-blue-900">
+                    Опросы
+                </button>
+            </a>
+            <div class="relative w-1/2">
+                <input type="text" name="query" id="search-input" class="w-full px-5 py-3 rounded-full border border-gray-300 shadow-sm focus:outline-none focus:border-blue-500 transition duration-300" placeholder="Введите запрос..." oninput="searchSurveys()">
+                <div class="absolute inset-y-0 right-0 pr-4 flex items-center">
+                    <button type="button" class="focus:outline-none" onclick="searchSurveys()">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div id="search-results">
+                </div>
+            </div>
+            <a href="{{ url_for('all_forms') }}">
+                <button type="button" class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-2 px-4 rounded-full font-bold transition duration-300 shadow-sm transform hover:scale-105 hover:text-blue-900">
+                    Анкеты
+                </button>
+            </a>
+        </form>
+
+        <nav class="flex items-center space-x-4">
+            <a href="/profile" class="p-2 rounded-full hover:bg-gray-200 focus:outline-none">
+                <img class="h-8 w-8" src="/static/img/ellipse.png" alt="Профиль">
+            </a>
+            <div class="flex space-x-4">
+                <a href="{{ url_for('admin_panel') }}" class="p-2 rounded-full hover:bg-gray-200 focus:outline-none">
+                    <svg class="h-8 w-8 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3v6h6V3H3zm0 8v6h6v-6H3zm8-8v6h6V3h-6zm0 8v6h6v-6h-6z"/>
+                    </svg>
+                </a>
+            </div>
+            <div class="relative inline-block text-left">
+                <button class="relative p-2 rounded-full hover:bg-gray-200 focus:outline-none" onclick="toggleNotifications()">
+                    <img class="h-8 w-8" src="/static/img/уведомления.png" alt="Уведомления">
+                    <span id="notification-badge" class="absolute top-0 right-0 w-4 h-4 bg-red-500 rounded-full -mt-1 -mr-1" style="display: none;"></span>
+                </button>
+            
+                <div id="notification-dropdown" class="absolute right-0 mt-2 w-64 bg-white shadow-lg rounded-lg overflow-hidden z-10 hidden">
+                    <div id="notification-list" class="max-h-56 overflow-y-auto" role="menu" aria-orientation="vertical">
+                    </div>
+                </div>
+            </div>
+            
+            <div id="notification-dropdown" class="absolute right-0 mt-2 w-64 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none hidden" style="display: none; z-index: 1000;">
+                <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu-button" tabindex="-1" id="notification-list">
+                    <a href="#" class="text-gray-700 block px-4 py-2 text-sm" role="menuitem" tabindex="-1">Нет уведомлений</a>
+                </div>
+            </div>
+            <div class="flex space-x-2">
+                <a href="/login" class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-2 px-4 rounded-full font-bold transition duration-300 shadow-sm transform hover:scale-105 hover:text-blue-900">
+                    Войти
+                </a>
+                <a href="/register" class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-2 px-4 rounded-full font-bold transition duration-300 shadow-sm transform hover:scale-105 hover:text-blue-900">
+                    Регистрация
+                </a>
+            </div>
+        </nav>
+    </div>
+</header>
+<div class="flex items-center justify-center min-h-screen bg-gray-100">
+    <div class="mx-auto w-full max-w-[800px] bg-white rounded-lg shadow-lg p-8">
+        <h1 class="mt-4 text-center text-2xl font-bold">Управление пользователями</h1>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="mt-4">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <table class="table-auto w-full mt-4">
+            <thead>
+                <tr class="bg-gray-200 text-left">
+                    <th class="py-2 px-4">ID</th>
+                    <th class="py-2 px-4">Имя</th>
+                    <th class="py-2 px-4">Email</th>
+                    <th class="py-2 px-4">Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                    <tr class="border-b">
+                        <td class="py-2 px-4">{{ user[0] }}</td>
+                        <td class="py-2 px-4">{{ user[1] }}</td>
+                        <td class="py-2 px-4">{{ user[2] }}</td> 
+                        <td class="py-2 px-4">
+                            <form action="{{ url_for('delete_user', user_id=user[0]) }}" method="POST" style="display:inline;">
+                                <button type="submit" class="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white py-1 px-3 rounded">Удалить</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
+</div>
+<footer class="bg-white border-t border-gray-200 mt-12">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="flex flex-col md:flex-row justify-between items-start">
+            <div class="flex items-center mb-6 md:mb-0">
+                <img src="/static/img/Isologo.png" alt="Логотип OnlineSurveys" class="w-12 h-12 mr-4">
+                <div>
+                    <h3 class="text-xl font-bold text-blue-700">OnlineSurvey</h3>
+                    <p class="text-sm text-gray-600">Сервис для проведения опросов и анкетирования</p>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+                <div>
+                    <h4 class="text-sm font-semibold text-gray-800 uppercase tracking-wider mb-4">Сервис</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-600 hover:text-blue-600 transition-colors">Правила сервиса</a></li>
+                        <li><a href="#" class="text-gray-600 hover:text-blue-600 transition-colors">Помощь</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-sm font-semibold text-gray-800 uppercase tracking-wider mb-4">Обратная связь</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-600 hover:text-blue-600 transition-colors">Контакты</a></li>
+                        <li><a href="#" class="text-gray-600 hover:text-blue-600 transition-colors">Отзывы</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-sm font-semibold text-gray-800 uppercase tracking-wider mb-4">Партнерам</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-600 hover:text-blue-600 transition-colors">Сотрудничество</a></li>
+                        <li><a href="#" class="text-gray-600 hover:text-blue-600 transition-colors">API</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-sm font-semibold text-gray-800 uppercase tracking-wider mb-4">Правовая информация</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-600 hover:text-blue-600 transition-colors">Пользовательское соглашение</a></li>
+                        <li><a href="#" class="text-gray-600 hover:text-blue-600 transition-colors">Политика конфиденциальности</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-8 pt-8 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center">
+            <p class="text-sm text-gray-500 mb-4 md:mb-0">&copy; {{ year }} OnlineSurvey. Все права защищены.</p>
+        </div>
+    </div>
+</footer>
+{% endblock %}

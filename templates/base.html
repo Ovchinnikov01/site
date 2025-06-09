@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>OnlineSurvey</title>
+        <link rel="stylesheet" href="{{url_for('static',filename='dist/css/output.css')}}">
+        <script src="https://cdn.tailwindcss.com"></script>
+    </head>
+    <style>
+        #search-results {
+    position: absolute;
+    width: 100%;
+    background-color: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    margin-top: 0.25rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    z-index: 50;
+    display: none;
+}
+    </style>
+    <body>
+        
+        {% block body %} {% endblock %}
+        {% block last %} {% endblock %}
+        {% if session.role != 'admin' %}
+{% endif %}
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.0.0/flowbite.min.js"></script>
+        <script>
+            function toggleFormFields(contentType) {
+                document.querySelectorAll('.form-fields').forEach(form => {
+                    form.style.display = 'none';
+                });
+                const formTypeSelector = document.getElementById('form_type_selector');
+                formTypeSelector.style.display = (contentType === 'form') ? 'block' : 'none';
+                const surveyOptions = document.getElementById('survey_options');
+                if (surveyOptions) {
+                    surveyOptions.style.display = (contentType === 'survey') ? 'block' : 'none';
+                }
+                        const formTypeRadios = document.querySelectorAll('input[name="form_type"]');
+                        formTypeRadios.forEach(radio => {
+                            radio.checked = false;
+                        });
+                        toggleFields(null);
+            }
+        
+            function toggleFields(formType) {
+                document.querySelectorAll('.form-fields').forEach(form => {
+                    form.style.display = 'none';
+                });
+                if (formType) {
+                    const formFields = document.getElementById(formType + '_fields');
+                    if (formFields) {
+                        formFields.style.display = 'block';
+                    }
+                }
+            }
+            function initializeForm() {
+                let contentType = document.querySelector('input[name="content_type"]:checked');
+                if (contentType) {
+                    toggleFormFields(contentType.value);
+                    if (contentType.value === 'form') {
+                        let formType = document.querySelector('input[name="form_type"]:checked');
+                        if (formType) {
+                            toggleFields(formType.value);
+                        }
+                    }
+                }
+            }
+            document.addEventListener('DOMContentLoaded', function() {
+                initializeForm();
+                const contentTypeRadios = document.querySelectorAll('input[name="content_type"]');
+                contentTypeRadios.forEach(radio => {
+                    radio.addEventListener('change', function() {
+                        toggleFormFields(this.value);
+        
+        
+                    });
+                });
+                const formTypeRadios = document.querySelectorAll('input[name="form_type"]');
+                formTypeRadios.forEach(radio => {
+                    radio.addEventListener('change', function() {
+                        toggleFields(this.value);
+                    });
+                });
+                const tabButtons = document.querySelectorAll('.tab-button');
+                const tabContents = document.querySelectorAll('.tab-content');
+                function showTab(tabId) {
+                    tabContents.forEach(content => {
+                        content.classList.remove('active');
+                        content.style.display = "none"; 
+                    });
+                    tabButtons.forEach(button => {
+                        button.classList.remove('active');
+                    });
+                    const activeTab = document.getElementById(tabId);
+                    const activeButton = document.querySelector(`[data-tab="${tabId}"]`);
+                    if (activeTab && activeButton) {
+                        activeTab.classList.add('active');
+                        activeButton.classList.add('active');
+                        activeTab.style.display = "block"; 
+                    }
+                }
+                tabButtons.forEach(button => {
+                    button.addEventListener('click', function () {
+                        const tabId = this.getAttribute('data-tab');
+                        showTab(tabId);
+                    });
+                });
+                showTab('survey-form');
+            });
+        </script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                async function loadSurveys(url, containerId) {
+                    const container = document.getElementById(containerId);
+                    try {
+                        const response = await fetch(url);
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! Status: ${response.status}`);
+                        }
+                        const surveys = await response.json();
+            
+                        if (surveys && surveys.length > 0) {
+                            let surveyHTML = '';
+                            surveys.forEach(survey => {
+                                surveyHTML += `
+                                    <div class="survey-card bg-gray-100 rounded-lg shadow-md p-6 mb-4 transition-all duration-300 hover:shadow-lg" data-survey-id="${survey.id}">
+                                        <h3 class="survey-title text-xl font-semibold text-gray-900">${survey.title.slice(0, 10)}${survey.title.length > 10 ? '...' : ''}</h3>
+                                        <p class="survey-description text-gray-700 text-sm mb-4">${survey.description.slice(0, 25)}${survey.description.length > 25 ? '...' : ''}</p>
+                                        <div class="rating-section mb-4">
+                                            <label for="rating-${survey.id}" class="text-sm">Оцените:</label>
+                                            <select id="rating-${survey.id}" class="rating-select">
+                                                <option value="0">Выберите рейтинг</option>
+                                                <option value="1">1</option>
+                                                <option value="2">2</option>
+                                                <option value="3">3</option>
+                                                <option value="4">4</option>
+                                                <option value="5">5</option>
+                                            </select>
+                                        </div>
+                                        <a href="${survey.url}" class="bg-gray-600 text-white font-semibold rounded-lg px-4 py-2 transition-all hover:bg-gray-500">Читать полностью</a>
+                                    </div>
+                                `;
+                            });
+                            container.innerHTML = surveyHTML;
+                            attachRatingHandlers();
+                        } else {
+                            container.innerHTML = '<p class="text-center text-gray-500">Нет топ-опросов.</p>';
+                        }
+                    } catch (error) {
+                        console.error('Error fetching surveys:', error);
+                        container.innerHTML = '<p class="text-center text-gray-600">Ошибка загрузки опросов.</p>';
+                    }
+                }
+                function attachRatingHandlers() {
+                    const ratingSelects = document.querySelectorAll('.rating-select');
+                    ratingSelects.forEach(select => {
+                        select.addEventListener('change', async function() {
+                            const surveyId = this.parentElement.parentElement.getAttribute('data-survey-id');
+                            const rating = this.value;
+                            if (rating > 0) { 
+                                try {
+                                    const response = await fetch(`/survey/${surveyId}`, {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'X-CSRFToken': getCookie('csrf_token')
+                                        },
+                                        body: JSON.stringify({ rating })
+                                    });
+            
+                                    if (response.ok) {
+                                        const data = await response.json();
+                                        alert(data.message);
+                                    } else {
+                                        throw new Error('Ошибка при отправке рейтинга');
+                                    }
+                                } catch (error) {
+                                    console.error('Error submitting rating:', error);
+                                    alert('Произошла ошибка при отправке рейтинга.');
+                                }
+                            }
+                        });
+                    });
+                }
+                loadSurveys('/api/top-surveys', 'top-surveys');
+            });
+            </script>
+        <script>
+            function togglePassword() {
+                var passwordField = document.getElementById("password");
+                if (passwordField.type === "password") {
+                    passwordField.type = "text";
+                } else {
+                    passwordField.type = "password";
+                }
+            }
+        </script>
+       <script>
+        async function loadNotifications() {
+            const response = await fetch('/api/notifications');
+            const notifications = await response.json();
+    
+            const notificationList = document.getElementById('notification-list');
+            notificationList.innerHTML = ''; 
+    
+            if (notifications.length === 0) {
+                notificationList.innerHTML = '<a href="#" class="text-gray-700 block px-4 py-2 text-sm" role="menuitem" tabindex="-1">Нет новых уведомлений</a>';
+            } else {
+                const limitedNotifications = notifications.slice(0, 7);
+                limitedNotifications.forEach(n => {
+                    const notificationItem = document.createElement('a');
+                    notificationItem.href = n.link;
+                    notificationItem.className = 'text-gray-700 block px-4 py-2 text-sm';
+                    notificationItem.innerText = n.message;
+                    notificationList.appendChild(notificationItem);
+                });
+            }
+        }
+    
+        function toggleNotifications() {
+            var dropdown = document.getElementById('notification-dropdown');
+            if (dropdown.style.display === "none" || dropdown.style.display === "") {
+                dropdown.style.display = "block";
+                loadNotifications();
+            } else {
+                dropdown.style.display = "none";
+            }
+        }
+    
+        document.addEventListener('readystatechange', event => {
+            if (event.target.readyState === 'complete') {
+                loadNotifications();
+            }
+        });
+    
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('notification-dropdown');
+            const button = document.querySelector('button[onclick="toggleNotifications()"]');
+    
+            if (!button.contains(event.target) && !dropdown.contains(event.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
+    </script>
+        <script>
+            function searchSurveys() {
+                let query = document.getElementById('search-input').value;
+                let resultsDiv = document.getElementById('search-results');
+                
+                if (query.length > 0) {
+                    fetch('/search?query=' + encodeURIComponent(query))
+                        .then(response => response.json())
+                        .then(data => {
+                            resultsDiv.innerHTML = '';
+                            
+                            if (data.length > 0) {
+                                data.forEach(item => {
+                                    let resultElement = document.createElement('a');
+                                    resultElement.href = item.type === 'form' 
+                                        ? `/form/${item.id}` 
+                                        : `/survey/${item.id}`;
+                                    resultElement.className = 'block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100';
+                                    resultElement.innerText = item.name || item.title;
+                                    resultsDiv.appendChild(resultElement);
+                                });
+                                resultsDiv.style.display = 'block'; 
+                            } else {
+                                resultsDiv.innerHTML = '<div class="px-4 py-2 text-sm text-gray-700">Нет результатов</div>';
+                                resultsDiv.style.display = 'block';
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Ошибка поиска:', error);
+                            resultsDiv.innerHTML = '<div class="px-4 py-2 text-sm text-gray-700">Ошибка при поиске</div>';
+                            resultsDiv.style.display = 'block';
+                        });
+                } else {
+                    resultsDiv.style.display = 'none'; 
+                }
+            }
+            document.addEventListener('click', function(e) {
+                let searchContainer = document.querySelector('.search-container');
+                let resultsDiv = document.getElementById('search-results');
+                
+                if (!searchContainer.contains(e.target)) {
+                    resultsDiv.style.display = 'none';
+                }
+            });
+            </script>
+        
+        <script>
+            function toggleDropdown(event) {
+                const dropdownMenu = event.target.closest('.relative').querySelector('.dropdown-menu');
+                dropdownMenu.classList.toggle('hidden');
+            }
+            document.addEventListener('click', function(event) {
+                const dropdowns = document.querySelectorAll('.dropdown-menu');
+                dropdowns.forEach(function(dropdown) {
+                    if (!dropdown.contains(event.target) && !event.target.closest('.relative')) {
+                        dropdown.classList.add('hidden');
+                    }
+                });
+            });
+        </script>
+
+<script>
+            $(document).ready(function() {
+    $('.delete-button').on('click', function() {
+        const button = $(this);
+        const formCard = button.closest('.form-card');
+        const formId = formCard.attr('id').split('-')[1];
+        
+        if (confirm('Вы уверены, что хотите удалить эту анкету?')) {
+            $.ajax({
+                url: `/delete_form/${formId}`,
+                type: 'POST',
+                success: function(response) {
+                    alert(response.message);
+                    formCard.remove();
+                },
+                error: function(xhr) {
+                    alert('Ошибка: ' + xhr.responseJSON.message);
+                }
+            });
+        }
+    });
+});
+        </script>
+
+<script>
+    document.getElementById('filterToggle').onclick = function() {
+        var filterForm = document.getElementById('filterForm');
+        filterForm.classList.toggle('hidden');
+    };
+    </script>
+    
+    <script>
+        function toggleReplyForm(formId) {
+            const form = document.getElementById(formId);
+            form.classList.toggle('hidden');
+        }
+        function toggleReplies(containerId, button) {
+            const container = document.getElementById(containerId);
+            const icon = button.querySelector('svg');
+            
+            container.classList.toggle('hidden');
+            icon.classList.toggle('rotate-180');
+        }
+    </script>
+            <script>
+                function toggleReplyForm(formId) {
+                    const form = document.getElementById(formId);
+                    form.classList.toggle('hidden');
+                }
+                </script>
+    </body>
+    
+    </html>

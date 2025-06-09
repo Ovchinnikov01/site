@@ -1,0 +1,329 @@
+{% extends 'base.html' %}
+{% block body %}
+<header class="relative bg-blue-400 border-b border-gray-200 py-6">
+  <div class="container mx-auto flex items-center justify-between">
+      <a href="{{ url_for('index') }}" class="text-2xl font-bold text-white flex items-center">
+          <img class="h-10 w-10 mr-2" src="/static/img/Isologo.png" alt="Логотип OnlineSurvey">
+          <span>OnlineSurvey</span>
+      </a>
+
+      <form action="{{ url_for('search') }}" method="get" class="flex items-center justify-center flex-grow space-x-6">
+          <a href="{{ url_for('all_surveys') }}">
+              <button type="button" class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-2 px-4 rounded-full font-bold transition duration-300 shadow-sm transform hover:scale-105 hover:text-blue-900">
+                  Опросы
+              </button>
+          </a>
+          <div class="relative w-1/2">
+              <input type="text" name="query" id="search-input" class="w-full px-5 py-3 rounded-full border border-gray-300 shadow-sm focus:outline-none focus:border-blue-500 transition duration-300" placeholder="Введите запрос..." oninput="searchSurveys()">
+              <div class="absolute inset-y-0 right-0 pr-4 flex items-center">
+                  <button type="button" class="focus:outline-none" onclick="searchSurveys()">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-800" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                      </svg>
+                  </button>
+              </div>
+              <div id="search-results">
+              </div>
+          </div>
+          <a href="{{ url_for('all_forms') }}">
+              <button type="button" class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-2 px-4 rounded-full font-bold transition duration-300 shadow-sm transform hover:scale-105 hover:text-blue-900">
+                  Анкеты
+              </button>
+          </a>
+      </form>
+
+      <nav class="flex items-center space-x-4">
+          <a href="/profile" class="p-2 rounded-full hover:bg-gray-200 focus:outline-none">
+              <img class="h-8 w-8" src="/static/img/ellipse.png" alt="Профиль">
+          </a>
+          <div class="flex space-x-4">
+              <a href="{{ url_for('admin_panel') }}" class="p-2 rounded-full hover:bg-gray-200 focus:outline-none">
+                  <svg class="h-8 w-8 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3v6h6V3H3zm0 8v6h6v-6H3zm8-8v6h6V3h-6zm0 8v6h6v-6h-6z"/>
+                  </svg>
+              </a>
+          </div>
+          <div class="relative inline-block text-left">
+              <button class="relative p-2 rounded-full hover:bg-gray-200 focus:outline-none" onclick="toggleNotifications()">
+                  <img class="h-8 w-8" src="/static/img/уведомления.png" alt="Уведомления">
+                  <span id="notification-badge" class="absolute top-0 right-0 w-4 h-4 bg-red-500 rounded-full -mt-1 -mr-1" style="display: none;"></span>
+              </button>
+          
+              <div id="notification-dropdown" class="absolute right-0 mt-2 w-64 bg-white shadow-lg rounded-lg overflow-hidden z-10 hidden">
+                  <div id="notification-list" class="max-h-56 overflow-y-auto" role="menu" aria-orientation="vertical">
+                  </div>
+              </div>
+          </div>
+          
+          <div id="notification-dropdown" class="absolute right-0 mt-2 w-64 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none hidden" style="display: none; z-index: 1000;">
+              <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="options-menu-button" tabindex="-1" id="notification-list">
+                  <a href="#" class="text-gray-700 block px-4 py-2 text-sm" role="menuitem" tabindex="-1">Нет уведомлений</a>
+              </div>
+          </div>
+          <div class="flex space-x-2">
+              <a href="/login" class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-2 px-4 rounded-full font-bold transition duration-300 shadow-sm transform hover:scale-105 hover:text-blue-900">
+                  Войти
+              </a>
+              <a href="/register" class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white py-2 px-4 rounded-full font-bold transition duration-300 shadow-sm transform hover:scale-105 hover:text-blue-900">
+                  Регистрация
+              </a>
+          </div>
+      </nav>
+  </div>
+</header>
+<div class="container mx-auto py-12 px-4 sm:px-6 lg:px-8">
+  <div class="bg-white/80 backdrop-blur-lg rounded-3xl shadow-xl overflow-hidden border border-white/30">
+    {% if survey %}
+      <div class="bg-gradient-to-r from-blue-500 to-blue-600 p-8 text-white">
+        <div class="flex justify-between items-start">
+          <div>
+            <h1 class="text-3xl font-bold tracking-tight">{{ survey[1] }}</h1>
+            <div class="flex items-center mt-2">
+              <span class="text-blue-100">Автор:</span>
+              <a href="{{ url_for('user_profile', username=survey[5]) }}" class="ml-2 font-semibold hover:text-white transition-colors">{{ survey[5] }}</a>
+            </div>
+          </div>
+          <div class="bg-white/20 rounded-full px-4 py-2 flex items-center">
+            <span class="text-2xl font-bold mr-1">{{ avg_rating }}</span>
+            <div class="flex">
+              {% for i in range(1, 6) %}
+                <span class="text-sm {% if i <= avg_rating %}text-yellow-300{% else %}text-white/30{% endif %}">★</span>
+              {% endfor %}
+            </div>
+            <span class="text-xs ml-2 text-white/80">({{ rating_count }} оценок)</span>
+          </div>
+        </div>
+      </div>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-0">
+        <div class="lg:col-span-1 p-6 bg-blue-50/50">
+          <div class="aspect-w-16 aspect-h-9 rounded-xl overflow-hidden shadow-lg">
+            {% if survey[4] %}
+              <img src="{{ survey[4] }}" alt="Изображение опроса" class="max-w-full max-h-full object-cover">
+            {% else %}
+              <div class="w-full h-full bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center">
+                <span class="text-blue-400 text-lg">Нет изображения</span>
+              </div>
+            {% endif %}
+          </div>
+          <div class="mt-8">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">Оцените опрос</h3>
+            <form method="POST" class="flex flex-col items-center">
+              <div class="flex justify-center space-x-1 mb-2">
+                {% for i in range(1, 6) %}
+                  <button type="submit" name="rating" value="{{ i }}" 
+                    class="transform transition-all hover:scale-125 active:scale-90 focus:outline-none">
+                    <span class="text-4xl {% if user_rating and i <= user_rating %}text-yellow-400
+                                         {% elif not user_rating and i <= avg_rating %}text-yellow-300
+                                         {% else %}text-gray-300 hover:text-yellow-300{% endif %}">★</span>
+                  </button>
+                {% endfor %}
+              </div>
+              <p class="text-center text-gray-500 text-sm">
+                {% if user_rating %}
+                  Ваша оценка: {{ user_rating }} ★
+                {% else %}
+                  Нажмите на звезду для оценки
+                {% endif %}
+              </p>
+            </form>
+          </div>
+        </div>
+        <div class="lg:col-span-2 p-8 bg-white">
+          <div class="prose max-w-none">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Описание</h2>
+            <div class="text-gray-700 space-y-4">
+              {{ survey[2]|replace('\n', '<br>')|safe }}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="border-t border-gray-200">
+        <div class="p-8">
+          <h2 class="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+            Комментарии
+          </h2>
+          {% if comments %}
+          <div class="space-y-6">
+            {% for comment in comments %}
+            <div class="bg-blue-50/30 rounded-xl p-5 shadow-sm">
+              <div class="flex gap-4">
+                <div class="flex-shrink-0">
+                  {% if comment.profile_picture %}
+                    <img src="{{ comment.profile_picture }}" alt="Аватар" class="w-12 h-12 rounded-full object-cover border-2 border-white shadow">
+                  {% else %}
+                    <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-100 to-blue-300 flex items-center justify-center text-blue-600 font-bold text-lg border-2 border-white shadow">
+                      {{ comment.username[0]|upper }}
+                    </div>
+                  {% endif %}
+                </div>
+                <div class="flex-1">
+                  <div class="flex items-baseline justify-between">
+                    <h4 class="font-bold text-gray-800">{{ comment.username }}</h4>
+                    <span class="text-xs text-gray-500">{{ comment.moscow_time }}</span>
+                  </div>
+                  <p class="mt-1 text-gray-700">{{ comment.text }}</p>
+                  <button type="button" 
+                          onclick="toggleReplyForm('reply-form-{{ comment.id }}')"
+                          class="mt-2 text-sm text-blue-600 hover:text-blue-800 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                    </svg>
+                    Ответить
+                  </button>
+                  <div id="reply-form-{{ comment.id }}" class="hidden mt-3 pl-4 border-l-2 border-blue-200">
+                    <form method="POST" action="{{ url_for('reply_to_comment', comment_id=comment.id) }}" class="space-y-3">
+                      <textarea name="reply_text" rows="2"
+                          class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          placeholder="Ваш ответ..." required></textarea>
+                      <div class="flex gap-2">
+                        <button type="button" 
+                                onclick="toggleReplyForm('reply-form-{{ comment.id }}')"
+                                class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">
+                          Отмена
+                        </button>
+                        <button type="submit" 
+                                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-md">
+                          Отправить
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                  {% set replies = get_replies(comment.id) %}
+                  {% if replies %}
+                  <div class="mt-4">
+                    <button type="button" 
+                            onclick="toggleReplies('replies-{{ comment.id }}', this)"
+                            class="flex items-center text-sm text-blue-600 hover:text-blue-800">
+                      <span>Ответы ({{ replies|length }})</span>
+                      <svg id="icon-{{ comment.id }}" class="w-4 h-4 ml-1 transition-transform transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                      </svg>
+                    </button>
+                    
+                    <div id="replies-{{ comment.id }}" class="hidden mt-3 space-y-3 ml-4">
+                      {% for reply in replies %}
+                      <div class="bg-white/70 p-4 rounded-lg shadow-xs border border-gray-100">
+                        <div class="flex gap-3">
+                          <div class="flex-shrink-0">
+                            {% if reply.profile_picture %}
+                              <img src="{{ reply.profile_picture }}" alt="Аватар" class="w-10 h-10 rounded-full object-cover border border-white">
+                            {% else %}
+                              <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center text-blue-500 text-sm font-bold border border-white">
+                                {{ reply.username[0]|upper }}
+                              </div>
+                            {% endif %}
+                          </div>
+                          <div>
+                            <div class="flex items-baseline justify-between">
+                              <span class="font-medium text-gray-800">{{ reply.username }}</span>
+                              <span class="text-xs text-gray-500">{{ reply.moscow_time }}</span>
+                            </div>
+                            <p class="mt-1 text-sm text-gray-700">{{ reply.text }}</p>
+                          </div>
+                        </div>
+                      </div>
+                      {% endfor %}
+                    </div>
+                  </div>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="text-center py-8">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+            <p class="mt-2 text-gray-600">Пока нет комментариев. Будьте первым!</p>
+          </div>
+          {% endif %}
+        </div>
+        <div class="bg-blue-50/30 p-8 border-t border-gray-200">
+          <h2 class="text-2xl font-bold text-gray-800 mb-4">Оставить комментарий</h2>
+          <form method="POST" class="space-y-4">
+            <div>
+              <textarea name="text" rows="4" 
+                class="w-full p-4 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                placeholder="Напишите ваш комментарий здесь..." required></textarea>
+            </div>
+            <button type="submit" 
+              class="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5">
+              Отправить комментарий
+            </button>
+          </form>
+        </div>
+      </div>
+    {% else %}
+      <div class="p-8 text-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <h2 class="text-xl font-bold text-gray-700 mt-4">Опрос не найден</h2>
+        <p class="text-gray-500 mt-2">Запрошенный вами опрос не существует или был удален</p>
+      </div>
+    {% endif %}
+  </div>
+</div>
+<div class="fixed bottom-0 right-0 z-50 mb-6 mr-6">
+    <a href="{{ url_for('create_survey') }}"
+        class="group relative inline-flex items-center overflow-hidden rounded-2xl bg-blue-600 px-8 py-3 text-white shadow-2xl transition transform hover:bg-blue-700">
+        <span class="relative">Создать опрос</span>
+        <div class="absolute right-0 top-0 h-12 w-20 -mr-3 transition-all duration-500 ease-out group-hover:mr-0"></div>
+        <div class="absolute top-0 h-32 w-32 rotate-45 translate-x-40 bg-white opacity-10 transition-all duration-500 ease-out group-hover:translate-x-0"></div>
+    </a>
+</div>
+<footer class="bg-white border-t border-gray-200 mt-12">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="flex flex-col md:flex-row justify-between items-start">
+            <div class="flex items-center mb-6 md:mb-0">
+                <img src="/static/img/Isologo.png" alt="Логотип OnlineSurveys" class="w-12 h-12 mr-4">
+                <div>
+                    <h3 class="text-xl font-bold text-blue-700">OnlineSurvey</h3>
+                    <p class="text-sm text-gray-600">Сервис для проведения опросов и анкетирования</p>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+                <div>
+                    <h4 class="text-sm font-semibold text-gray-800 uppercase tracking-wider mb-4">Сервис</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-600 hover:text-blue-600 transition-colors">Правила сервиса</a></li>
+                        <li><a href="#" class="text-gray-600 hover:text-blue-600 transition-colors">Помощь</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-sm font-semibold text-gray-800 uppercase tracking-wider mb-4">Обратная связь</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-600 hover:text-blue-600 transition-colors">Контакты</a></li>
+                        <li><a href="#" class="text-gray-600 hover:text-blue-600 transition-colors">Отзывы</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-sm font-semibold text-gray-800 uppercase tracking-wider mb-4">Партнерам</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-600 hover:text-blue-600 transition-colors">Сотрудничество</a></li>
+                        <li><a href="#" class="text-gray-600 hover:text-blue-600 transition-colors">API</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-sm font-semibold text-gray-800 uppercase tracking-wider mb-4">Правовая информация</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-600 hover:text-blue-600 transition-colors">Пользовательское соглашение</a></li>
+                        <li><a href="#" class="text-gray-600 hover:text-blue-600 transition-colors">Политика конфиденциальности</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-8 pt-8 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center">
+            <p class="text-sm text-gray-500 mb-4 md:mb-0">&copy; {{ year }} OnlineSurvey. Все права защищены.</p>
+        </div>
+    </div>
+</footer>
+
+{% endblock %}

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block body %}
+{% if results %}
+    <ul class="py-2">
+        {% for result in results %}
+            <li>
+                <a href="{% if result.type == 'form' %}{{ url_for('form', form_id=result.id) }}{% else %}{{ url_for('survey', survey_id=result.id) }}{% endif %}" 
+                   class="block px-4 py-2 text-gray-800 hover:bg-gray-100 transition duration-200">
+                    {{ result.title }}
+                </a>
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p class="px-4 py-2 text-gray-600">Нет результатов, соответствующих вашему запросу.</p>
+{% endif %}
+{% endblock %}
