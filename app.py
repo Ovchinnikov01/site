@@ -469,7 +469,8 @@ def user_profile(username):
     formatted_registration_date = format_registration_date(datetime.strptime(registration_date, '%Y-%m-%d %H:%M:%S'))
     formatted_last_activity_time = format_activity_date(last_activity_time)
     db.close()
-    return render_template('user_profile.html',user=user,user_surveys=user_surveys,user_forms=user_forms,total_surveys=total_surveys,total_forms=total_forms,registration_date=formatted_registration_date,last_activity_time=formatted_last_activity_time,truncate_words=truncate_words)
+    return render_template('user_profile.html',user=user,user_surveys=user_surveys,user_forms=user_forms,total_surveys=total_surveys,total_forms=total_forms,
+                           registration_date=formatted_registration_date,last_activity_time=formatted_last_activity_time,truncate_words=truncate_words)
 
 @app.route('/delete_survey/<int:survey_id>', methods=['POST'])
 def delete_survey(survey_id):
@@ -693,7 +694,6 @@ def create_survey():
     if session.get('role') == 'admin':
         flash('Администраторам запрещено создавать опросы и анкеты', 'error')
         return redirect(url_for('admin_panel'))
-    
     if request.method == 'POST':
         action = request.form.get('action')
         if action == 'preview':
@@ -905,7 +905,8 @@ def survey(survey_id):
                     url_for('survey', survey_id=survey_id)
                 )
                 return redirect(url_for('survey', survey_id=survey_id))
-        return render_template('survey.html', survey=survey, questions=questions, all_options=all_options, comments=comments, avg_rating=avg_rating,rating_count=rating_count,user_rating=user_rating,get_replies=get_replies)
+        return render_template('survey.html', survey=survey, questions=questions, all_options=all_options, comments=comments, 
+                               avg_rating=avg_rating,rating_count=rating_count,user_rating=user_rating,get_replies=get_replies)
     except sqlite3.Error as e:
         print(f"Database error: {e}")
         flash("Ошибка при работе с базой данных", "error") 
@@ -1224,208 +1225,320 @@ if __name__ == '__main__':
             print(f"User {user[0]} already exists, skipping.")
 
     db.commit()
-
-    products = [
+    movie_surveys = [
         (
-            'Echips Arctic',
-            """Бренд: Echips
-            Операционная система: Windows 11 Home
-            Процессор: Intel N100
-            Линейка процессора: Intel N
-            Количество ядер процессора: 4
-            Ядро процессора: Alder Lake
-            Оперативная память: 16 ГБ
-            Тип памяти: LPDDR5
-            Диагональ экрана: 15.6"
-            Разрешение экрана: 1920x1080
-            Частота обновления экрана: 60 Гц
-            Тип покрытия экрана: глянцевый
-            Тип матрицы экрана: IPS
-            Беспроводные интерфейсы: Bluetooth, Wi-Fi
-            Стандарт Wi-Fi 802.11: 802.11ac
-            Версия Bluetooth: 5.1
-            Интерфейсы: USB 2.0 Type A, USB 3.0 Type A x 2, USB 3.0 Type-C, выход HDMI, микрофон/наушники Combo
-            Видеокарта: Intel UHD Graphics
-            Тип видеокарты: встроенная
-            Общий объем накопителей SSD: 512 ГБ
-            Общий объем накопителей HDD: отсутствует
-            Время автономной работы: 5 ч
-            Подсветка клавиатуры: есть
-            """,
+            'Фильм "Прошлые жизни" (2023) - Первая любовь спустя годы',
+            """Достоинства:
+            - Потрясающая операторская работа с видами Нью-Йорка и Сеула
+            - Уникальный взгляд на тему судьбы и "что если"
+            - Игра актёров передаёт тонкие эмоции
+            - Отсутствие излишней драматизации
+            
+            Недостатки:
+            - Медленный ритм может утомить
+            - Не все диалоги одинаково убедительны
+            
+            Мой отзыв:
+            Этот фильм — как тихий разговор с самим собой поздним вечером. 
+            История о корейских друзьях детства, разлучённых эмиграцией, 
+            которые встречаются через 20 лет в Нью-Йорке. 
+            
+            Что особенно цепляет:
+            - Как показана культурная идентичность
+            - Тонкие намёки на "альтернативные жизни"
+            - Сцены молчания говорят больше слов
+            
+            Для кого: Для тех, кто ценит камерное кино и ностальгию.""",
             'user1',
             'survey',
             'none',
-            '/static/img/6.png',
+            'https://images.unsplash.com/photo-1489599849927-2ee91cede3ba',
             None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None
         ),
         (
-            'Apple iPhone 14',
-            """Бренд: Apple
-            Операционная система: iOS
-            Размер экрана: 6.1"
-            Процессор: A15 Bionic
-            Объем оперативной памяти: 6 ГБ
-            Емкость хранения: 128/256/512 ГБ
-            Камера: Основная 12 МП, фронтальная 12 МП
-            Поддержка 5G: Да
-            Аккумулятор: до 20 часов в режиме разговора
-            Цвета: Черный, Золотой, Белый, Синий
-            Как вы оцениваете этот продукт?""",
+            'Сериал "Мост" (2011-2018) - Скандинавский нуар',
+            """Достоинства:
+            - Атмосфера холодного реализма
+            - Захватывающий детективный сюжет
+            - Незабываемый дуэт главных героев
+            
+            Недостатки:
+            - Слишком мрачная цветовая гамма
+            - Некоторые серии растянуты
+            
+            Мой отзыв:
+            Этот датско-шведский сериал начинается с находки трупа 
+            ровно на границе двух стран. 
+            
+            Почему стоит посмотреть:
+            - Реалистичные полицейские процедуры
+            - Социальные проблемы без прикрас
+            - Развитие персонажей через сезоны
+            
+            Лучшая сцена: Диалоги в машине через границу.""",
             'user2',
             'survey',
             'none',
-            '/static/img/Apple iPhone 14.png',
+            'https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c',
             None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None
         ),
         (
-            'Dell XPS 13',
-            """Бренд: Dell
-            Операционная система: Windows 11
-            Процессор: Intel Core i7
-            Оперативная память: 16 ГБ LPDDR4x
-            Диагональ экрана: 13.4"
-            Разрешение экрана: 1920x1200 или 3840x2400
-            Время автономной работы: до 14 часов
-            Подсветка клавиатуры: Есть
-            Цвета: Серебристый, Черный
-            Как вы оцениваете этот продукт?""",
+            'Фильм "Довод" (2020) - Игра с временем',
+            """Достоинства:
+            - Инновационная концепция обращения времени
+            - Впечатляющие визуальные эффекты
+            - Динамичные экшен-сцены
+            
+            Недостатки:
+            - Сложный для восприятия сюжет
+            - Некоторые моменты требуют повторного просмотра
+            
+            Мой отзыв:
+            Кристофер Нолан снова бросает вызов зрителю. 
+            Фильм о шпионе, который пытается предотвратить 
+            глобальную катастрофу, используя технологию "инверсии времени".
+            
+            Что впечатлило:
+            - Сцена с перевёрнутым автомобилем
+            - Звуковое сопровождение
+            - Нелинейное повествование""",
             'user3',
             'survey',
             'none',
-            '/static/img/4.png',
+            'https://images.unsplash.com/photo-1536440136628-849c177e76a1',
             None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None
         ),
         (
-            'Samsung Galaxy S22',
-            """Бренд: Samsung
-            Операционная система: Android
-            Размер экрана: 6.2"
-            Процессор: Snapdragon 8 Gen 1 / Exynos 2200
-            Объем оперативной памяти: 8 ГБ
-            Основная камера: 50 МП
-            Фронтальная камера: 10 МП
-            Поддержка 5G: Да
-            Время автономной работы: до 20 часов в режиме разговора
-            Цвета: Черный, Белый, Золотой, Фиолетовый
-            Ваши впечатления?""",
-            'user1',
-            'survey',
-            'none',
-            '/static/img/4.png',
-            None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None
-        ),
-        (
-            'HP Spectre x360',
-            """Бренд: HP
-            Операционная система: Windows 10
-            Процессор: Intel Core i5
-            Оперативная память: 16 ГБ
-            Диагональ экрана: 13.3"
-            Разрешение экрана: 1920x1080
-            Время автономной работы: до 12 часов
-            Подсветка клавиатуры: Есть
-            Цвета: Черный, Золотой
-            Как вы оцениваете его производительность?""",
-            'user2',
-            'survey',
-            'none',
-            '/static/img/8.png',
-            None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None
-        ),
-        (
-            'Google Pixel 6',
-            """Бренд: Google
-            Операционная система: Android
-            Размер экрана: 6.4"
-            Процессор: Google Tensor
-            Объем оперативной памяти: 8 ГБ
-            Основная камера: 50 МП
-            Фронтальная камера: 12 МП
-            Поддержка 5G: Да
-            Время автономной работы: до 24 часов
-            Цвета: Черный, Белый, Зеленый
-            Как вы оцениваете фото- и видеокамеру?""",
-            'user3',
-            'survey',
-            'none',
-            '/static/img/8.png',
-            None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None
-        ),
-        (
-            'Asus ROG Zephyrus',
-            """Бренд: Asus
-            Операционная система: Windows 11
-            Процессор: AMD Ryzen 9
-            Графика: NVIDIA GeForce RTX 3060
-            Оперативная память: 16 ГБ
-            Диагональ экрана: 15.6"
-            Разрешение экрана: 1920x1080
-            Время автономной работы: до 7 часов
-            Подсветка клавиатуры: RGB
-            Как он себя ведет в играх?""",
+            'Сериал "Чернобыль" (2019) - Хроника катастрофы',
+            """Достоинства:
+            - Историческая достоверность
+            - Атмосфера тревоги и ужаса
+            - Великолепная игра актёров
+            
+            Недостатки:
+            - Мрачный и депрессивный
+            - Некоторые художественные преувеличения
+            
+            Мой отзыв:
+            Потрясающая реконструкция событий аварии на ЧАЭС. 
+            Сериал показывает не только сам взрыв, но и его последствия, 
+            как технические, так и человеческие.
+            
+            Самые сильные моменты:
+            - Сцена с ликвидаторами на крыше
+            - Судебное заседание
+            - Финал с современными кадрами""",
             'user4',
             'survey',
             'none',
-            '/static/img/8.png',
-            None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None
-        ),
-        (
-            'Xiaomi Mi 12',
-            """Бренд: Xiaomi
-            Операционная система: Android
-            Размер экрана: 6.28"
-            Процессор: Snapdragon 8 Gen 1
-            Объем оперативной памяти: 8 ГБ
-            Основная камера: 50 МП
-            Фронтальная камера: 32 МП
-            Поддержка 5G: Да
-            Время автономной работы: до 17 часов
-            Цвета: Черный, Серебристый, Синий
-            Как вам интерфейс MIUI?""",
-            'user1',
-            'survey',
-            'none',
-            '/static/img/Xiaomi Mi 12.png',
-            None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None
-        ),
-        (
-            'Lenovo ThinkPad X1 Carbon',
-            """Бренд: Lenovo
-            Операционная система: Windows 11
-            Процессор: Intel Core i7
-            Оперативная память: 16 ГБ
-            Диагональ экрана: 14"
-            Разрешение экрана: 1920x1200
-            Время автономной работы: до 15 часов
-            Подсветка клавиатуры: Есть
-            Цвета: Черный
-            Как вы оцениваете его надежность?""",
-            'user2',
-            'survey',
-            'none',
-            '/static/img/8.png',
-            None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None
-        ),
-        (
-            'OnePlus 9',
-            """Бренд: OnePlus
-            Операционная система: Android
-            Размер экрана: 6.55"
-            Процессор: Snapdragon 888
-            Объем оперативной памяти: 8 ГБ
-            Основная камера: 48 МП
-            Фронтальная камера: 16 МП
-            Поддержка 5G: Да
-            Время автономной работы: до 20 часов
-            Цвета: Черный, Серебристый, Синий
-            Как вы оцениваете скорость работы?""",
-            'user3',
-            'survey',
-            'none',
-            '/static/img/OnePlus 9.png',
+            'https://images.unsplash.com/photo-1560169897-fc0cdbdfa4d5',
             None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None
         )
     ]
+    book_surveys = [
+        (
+            'Книга "Три товарища" Ремарка - Дружба и потеря',
+            """Достоинства:
+            - Пронзительное описание мужской дружбы
+            - Исторический контекст Веймарской республики
+            - Философские размышления о жизни
+            
+            Недостатки:
+            - Может показаться слишком пессимистичной
+            - Некоторые диалоги старомодны
+            
+            Мой отзыв:
+            Перечитала спустя 10 лет — и как будто другая книга. 
+            История трёх ветеранов Первой мировой, пытающихся 
+            найти себя в мирной жизни. 
+            
+            Что осталось со мной:
+            - Сцена с розами у санатория
+            - Разговоры в гараже
+            - Последние строки романа""",
+            'user3',
+            'survey',
+            'none',
+            'https://images.unsplash.com/photo-1544947950-fa07a98d237f',
+            None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None
+        ),
+        (
+            'Книга "1984" Джорджа Оруэлла - Антиутопия',
+            """Достоинства:
+            - Пророческое видение тоталитаризма
+            - Глубокие философские вопросы
+            - Атмосфера подавления и страха
+            
+            Недостатки:
+            - Мрачная и депрессивная
+            - Медленное развитие сюжета
+            
+            Мой отзыв:
+            Роман, который с каждым годом становится всё актуальнее. 
+            История Уинстона Смита в мире тотального контроля 
+            и манипуляции сознанием.
+            
+            Ключевые моменты:
+            - Концепция "двоемыслия"
+            - Любовная линия с Джулией
+            - Финал, который невозможно забыть""",
+            'user4',
+            'survey',
+            'none',
+            'https://images.unsplash.com/photo-1589998059171-988d887df646',
+            None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None
+        ),
+        (
+            'Книга "Маленькая жизнь" Ханьи Янагихары - История травмы',
+            """Достоинства:
+            - Глубокое исследование психологии травмы
+            - Яркие, запоминающиеся персонажи
+            - Эмоциональная интенсивность
+            
+            Недостатки:
+            - Очень тяжелое содержание
+            - Длинные описания
+            
+            Мой отзыв:
+            Книга, которая оставляет след в душе. История четырёх друзей 
+            в Нью-Йорке, но в центре - Джуд с его страшным прошлым.
+            
+            Что поражает:
+            - Глубина раскрытия характеров
+            - Описание дружбы и любви
+            - Неожиданные повороты сюжета""",
+            'user5',
+            'survey',
+            'none',
+            'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c',
+            None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None
+        )
+    ]
+    travel_surveys = [
+        (
+            'Поездка в Исландию - Земля льда и огня',
+            """Достоинства:
+            - Уникальные пейзажи как с другой планеты
+            - Чистейший воздух и вода
+            - Дружелюбные местные жители
+            
+            Недостатки:
+            - Очень дорого
+            - Переменчивая погода
+            
+            Мой опыт:
+            Путешествовали на авто по кольцевой дороге 10 дней. 
+            
+            Самые яркие моменты:
+            1. Купание в Голубой лагуне при -5°C
+            2. Водопад Скоугафосс в лучах заката
+            3. Ледниковая лагуна Йёкюльсаурлоун
+            
+            Совет: Берите термобельё даже летом!""",
+            'user4',
+            'survey',
+            'none',
+            'https://images.unsplash.com/photo-1469796466635-455ede028aca',
+            None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None
+        ),
+        (
+            'Отдых в Грузии - Гостеприимный Кавказ',
+            """Достоинства:
+            - Вкуснейшая кухня и вино
+            - Красивая природа и архитектура
+            - Низкие цены по сравнению с Европой
+            
+            Недостатки:
+            - Проблемы с инфраструктурой вне туристических мест
+            - Языковой барьер в регионах
+            
+            Мой опыт:
+            Маршрут: Тбилиси - Кахетия - Казбеги - Батуми (2 недели).
+            
+            Что запомнилось:
+            - Дегустация вин в Сигнахи
+            - Вид на Казбек из церкви Св. Троицы
+            - Тбилисские серные бани
+            - Пляжи Батуми
+            
+            Совет: Учите базовые грузинские фразы!""",
+            'user5',
+            'survey',
+            'none',
+            'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a',
+            None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None
+        ),
+        (
+            'Поход по Алтаю - Горные приключения',
+            """Достоинства:
+            - Захватывающие дух пейзажи
+            - Чистейшие реки и озёра
+            - Возможность отключиться от цивилизации
+            
+            Недостатки:
+            - Сложные маршруты для новичков
+            - Переменчивая горная погода
+            
+            Мой опыт:
+            7-дневный треккинг по Чуйскому хребту с ночёвками в палатках.
+            
+            Самые яркие впечатления:
+            - Восхождение на перевал
+            - Купание в ледяном озере
+            - Ночи у костра под звёздами
+            
+            Совет: Берите хорошую трекинговую обувь!""",
+            'user1',
+            'survey',
+            'none',
+            'https://images.unsplash.com/photo-1588666309990-d68f08e3d4a6',
+            None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None
+        )
+    ]
+
+    all_surveys = movie_surveys + book_surveys + travel_surveys
+
+    for survey in all_surveys:
+        cursor.execute("SELECT * FROM surveys WHERE title = ?", (survey[0],))
+        existing_survey = cursor.fetchone()
+        
+        if existing_survey is None:
+            if len(survey) < 24:
+                survey = survey + (None,) * (24 - len(survey))
+                
+            cursor.execute("""
+                INSERT INTO surveys (
+                    title, description, user, type, form_type, image,
+                    job_title, job_company, job_location, job_description, job_requirements, job_salary,
+                    event_name, event_date, event_time, event_location, event_description, event_organizer,
+                    contest_name, contest_description, contest_start_date, contest_end_date, contest_requirements, contest_prizes
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, survey[:24])
+            
+            survey_id = cursor.lastrowid
+            num_comments = random.randint(3, 8)
+            for i in range(num_comments):
+                cursor.execute("""
+                    INSERT INTO comments (user, text, survey_id)
+                    VALUES (?, ?, ?)
+                """, (f'user{random.randint(1, 5)}', f'Комментарий {i + 1} к "{survey[0]}"', survey_id))
+            num_ratings = random.randint(2, 5)
+            for i in range(num_ratings):
+                user_id = random.randint(1, 5)
+                rating = round(random.uniform(3.0, 5.0), 1)
+                cursor.execute("SELECT * FROM ratings WHERE user = ? AND survey_id = ?", (f'user{user_id}', survey_id))
+                existing_rating = cursor.fetchone()
+                if not existing_rating:
+                    cursor.execute("""
+                        INSERT INTO ratings (user, survey_id, rating)
+                        VALUES (?, ?, ?)
+                    """, (f'user{user_id}', survey_id, rating))
+            
+            cursor.execute("SELECT AVG(rating) FROM ratings WHERE survey_id = ?", (survey_id,))
+            avg_rating = cursor.fetchone()[0]
+            if avg_rating:
+                cursor.execute("UPDATE surveys SET rating = ? WHERE id = ?", (round(avg_rating, 1), survey_id))
+
     basic_forms = [
         (
             'Форма для вакансии Senior Python Developer', 
@@ -1603,133 +1716,7 @@ if __name__ == '__main__':
             avg_rating = cursor.fetchone()[0]
             if avg_rating:
                 cursor.execute("UPDATE surveys SET rating = ? WHERE id = ?", (round(avg_rating, 1), form_id))
-    for product in products:
-        cursor.execute("SELECT * FROM surveys WHERE title = ?", (product[0],))
-        existing_survey = cursor.fetchone()
-        if existing_survey is None:
-            if len(product) < 24:
-                product = product + (None,) * (24 - len(product))
-            cursor.execute("""
-                INSERT INTO surveys (
-                    title, description, user, type, form_type, image,
-                    job_title, job_company, job_location, job_description, job_requirements, job_salary,
-                    event_name, event_date, event_time, event_location, event_description, event_organizer,
-                    contest_name, contest_description, contest_start_date, contest_end_date, contest_requirements, contest_prizes
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, product[:24])
-            survey_id = cursor.lastrowid
-            num_comments = random.randint(5, 10)
-            for i in range(num_comments):
-                cursor.execute("""
-                    INSERT INTO comments (user, text, survey_id)
-                    VALUES (?, ?, ?)
-                """, (f'user{random.randint(1, 5)}', f'Комментарий {i + 1} для {product[0]}', survey_id))
-            num_ratings = random.randint(3, 7)
-            for i in range(num_ratings):
-                user_id = random.randint(1, 5)
-                rating = round(random.uniform(3.0, 5.0), 1)
-                cursor.execute("SELECT * FROM ratings WHERE user = ? AND survey_id = ?", (f'user{user_id}', survey_id))
-                existing_rating = cursor.fetchone()
-                if not existing_rating:
-                    cursor.execute("""
-                        INSERT INTO ratings (user, survey_id, rating)
-                        VALUES (?, ?, ?)
-                    """, (f'user{user_id}', survey_id, rating))
-            cursor.execute("SELECT AVG(rating) FROM ratings WHERE survey_id = ?", (survey_id,))
-            avg_rating = cursor.fetchone()[0]
-            if avg_rating:
-                cursor.execute("UPDATE surveys SET rating = ? WHERE id = ?", (round(avg_rating, 1), survey_id))
-    movie_surveys = [
-        (
-            'Кино: Звёздные войны',
-            """Режиссёр: Джордж Лукас
-            Жанр: Фантастика
-            Год выхода: 1977
-            Сюжет: В далекой-давекой галактике...
-            Как вы оцениваете этот фильм?""",
-            'user2',
-            'survey',
-            'none',
-            '/static/img/9.png',
-            None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None
-        ),
-        (
-            'Кино: Начало',
-            """Режиссёр: Кристофер Нолан
-            Жанр: Научная фантастика
-            Год выхода: 2010
-            Сюжет: Вор, специализирующийся на краже идей...
-            Как вы воспринимаете фильм?""",
-            'user3',
-            'survey',
-            'none',
-            '/static/img/10.png',
-            None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None
-        ),
-        (
-            'Игра: The Last of Us',
-            """Разработчик: Naughty Dog
-            Жанр: Экшен/Приключения
-            Платформы: PS4, PS5
-            Сюжет: Постапокалиптический мир, выживание людей...
-            Как вы оцените игру?""",
-            'user4',
-            'survey',
-            'none',
-            '/static/img/10.png',
-            None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None
-        ),
-        (
-            'Игра: Cyberpunk 2077',
-            """Разработчик: CD Projekt Red
-            Жанр: Рольвая игра (RPG)
-            Платформы: PC, PS4, PS5, Xbox One, Xbox Series X/S
-            Сюжет: Быть наемником в неоновом городе будущего...
-            Как вы оцениваете свои впечатления?""",
-            'user5',
-            'survey',
-            'none',
-            '/static/img/10.png',
-            None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None
-        )
-    ]
-    for movie in movie_surveys:
-        cursor.execute("SELECT * FROM surveys WHERE title = ?", (movie[0],))
-        existing_movie_survey = cursor.fetchone()
-        if existing_movie_survey is None:
-            if len(movie) < 24:
-                movie = movie + (None,) * (24 - len(movie))
-                
-            cursor.execute("""
-                INSERT INTO surveys (
-                    title, description, user, type, form_type, image,
-                    job_title, job_company, job_location, job_description, job_requirements, job_salary,
-                    event_name, event_date, event_time, event_location, event_description, event_organizer,
-                    contest_name, contest_description, contest_start_date, contest_end_date, contest_requirements, contest_prizes
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """, movie[:24])
-            survey_id = cursor.lastrowid
-            num_comments = random.randint(5, 10)
-            for i in range(num_comments):
-                cursor.execute("""
-                    INSERT INTO comments (user, text, survey_id)
-                    VALUES (?, ?, ?)
-                """, (f'user{random.randint(1, 5)}', f'Комментарий {i + 1} для {movie[0]}', survey_id))
-            num_ratings = random.randint(4, 8)
-            for i in range(num_ratings):
-                user_id = random.randint(1, 5)
-                rating = round(random.uniform(2.5, 5.0), 1)
-                cursor.execute("SELECT * FROM ratings WHERE user = ? AND survey_id = ?", (f'user{user_id}', survey_id))
-                existing_rating = cursor.fetchone()
-                if not existing_rating:
-                    cursor.execute("""
-                        INSERT INTO ratings (user, survey_id, rating)
-                        VALUES (?, ?, ?)
-                    """, (f'user{user_id}', survey_id, rating))
-            cursor.execute("SELECT AVG(rating) FROM ratings WHERE survey_id = ?", (survey_id,))
-            avg_rating = cursor.fetchone()[0]
-            if avg_rating:
-                cursor.execute("UPDATE surveys SET rating = ? WHERE id = ?", (round(avg_rating, 1), survey_id))
+
     db.commit()
     db.close()
 
