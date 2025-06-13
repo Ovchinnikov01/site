@@ -1359,7 +1359,7 @@ if __name__ == '__main__':
             'user3',
             'survey',
             'none',
-            'https://images.unsplash.com/photo-1589998059171-988d887df646',
+            'https://images.unsplash.com/photo-1544947950-fa07a98d237f',
             None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None, None
         ),
         (
