@@ -582,7 +582,6 @@ def edit_survey(survey_id):
 def edit_form(form_id):
     db = get_db()
     cursor = db.cursor()
-
     if request.method == 'POST':
         title = request.form['title']
         description = request.form['description']
@@ -600,7 +599,6 @@ def edit_form(form_id):
             db.rollback()
         finally:
             db.close()
-    
     cursor.execute("SELECT * FROM surveys WHERE id = ? AND type = 'form'", (form_id,))
     form = cursor.fetchone()
     if not form:
